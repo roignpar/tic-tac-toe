@@ -1,0 +1,9 @@
+[package]
+name = "lib-tac-toe"
+version = "0.1.0"
+description = "Core logic of playing a tic-tac-toe game"
+authors = ["Robert Ignat <robert.ignat91@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+failure = "~0.1.5"

@@ -1,0 +1,7 @@
+**/*.rs.bk
+
+Session.vim
+
+# rust.vim builds each crate separately
+*/Cargo.lock
+**/target
