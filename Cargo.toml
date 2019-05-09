@@ -1,4 +1,5 @@
 [workspace]
 members = [
     "lib-tac-toe",
+    "tic-tac-toe",
 ]

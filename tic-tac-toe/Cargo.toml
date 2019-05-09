@@ -1,0 +1,11 @@
+[package]
+name = "tic-tac-toe"
+version = "0.1.0"
+description = "Tic-tac-toe video game"
+authors = ["Robert Ignat <robert.ignat91@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+quicksilver = "~0.3.11"
+image = "~0.21.1"
+lib-tac-toe = { path = "../lib-tac-toe" }
