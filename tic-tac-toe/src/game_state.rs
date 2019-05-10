@@ -1,6 +1,7 @@
 use quicksilver::{
     geom::Shape,
     graphics::{Background::Img, Color, Image},
+    input::{Mouse, MouseButton},
     lifecycle::{State, Window},
     Result as QSResult,
 };
@@ -44,6 +45,12 @@ impl State for TicTacToe {
 
         Ok(())
     }
+
+    fn update(&mut self, window: &mut Window) -> QSResult<()> {
+        self.handle_mouse(window.mouse());
+
+        Ok(())
+    }
 }
 
 impl TicTacToe {
@@ -68,6 +75,16 @@ impl TicTacToe {
         match xz {
             X => &self.assets.x,
             Z => &self.assets.z,
+        }
+    }
+
+    fn handle_mouse(&mut self, mouse: Mouse) {
+        let position = mouse.pos();
+
+        if mouse[MouseButton::Left].is_down() && self.grid.inside_grid(position) {
+            if let Some((coord, _)) = self.grid.cell_containing(position) {
+                let _ = self.game.mark(coord.0, coord.1);
+            }
         }
     }
 }

@@ -4,6 +4,8 @@ use quicksilver::{
     lifecycle::Window,
 };
 
+use lib_tac_toe::CellCoord;
+
 use super::assets::*;
 use crate::calc::*;
 
@@ -53,6 +55,8 @@ impl GridBuilder {
             cells: self.build_cells(),
             total_width: self.line_size + 2.0 * self.padding,
             total_height: self.line_size + 2.0 * self.padding,
+            top_left: self.padded_reference,
+            bottom_right: self.bottom_right,
         }
     }
 
@@ -109,6 +113,8 @@ impl GridBuilder {
 
 #[derive(Debug, Default)]
 pub struct Grid {
+    top_left: Vector,
+    bottom_right: Vector,
     pub total_width: f32,
     pub total_height: f32,
     pub line_mids: LineMids,
@@ -135,9 +141,15 @@ pub struct HorizLineMids {
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Cell {
-    pub top_left: RawPoint,
-    pub bottom_right: RawPoint,
-    pub mid: RawPoint,
+    pub top_left: Vector,
+    pub bottom_right: Vector,
+    pub mid: Vector,
+}
+
+impl Cell {
+    fn contains(&self, v: Vector) -> bool {
+        inside_rectangle(self.top_left, self.bottom_right, v)
+    }
 }
 
 impl Grid {
@@ -156,6 +168,22 @@ impl Grid {
         }
     }
 
+    pub fn cell_containing(&self, v: Vector) -> Option<(CellCoord, &Cell)> {
+        for (i, column) in self.cells.iter().enumerate() {
+            for (j, cell) in column.iter().enumerate() {
+                if cell.contains(v) {
+                    return Some(((i, j), cell));
+                }
+            }
+        }
+
+        None
+    }
+
+    pub fn inside_grid(&self, v: Vector) -> bool {
+        inside_rectangle(self.top_left, self.bottom_right, v)
+    }
+
     fn h_line_mids(&self) -> [Vector; 2] {
         [
             self.line_mids.horizontal.top,
@@ -166,4 +194,11 @@ impl Grid {
     fn v_line_mids(&self) -> [Vector; 2] {
         [self.line_mids.vertical.left, self.line_mids.vertical.right]
     }
+}
+
+fn inside_rectangle(top_left: Vector, bottom_right: Vector, point: Vector) -> bool {
+    point.x > top_left.x
+        && point.y > top_left.y
+        && point.x < bottom_right.x
+        && point.y < bottom_right.y
 }
