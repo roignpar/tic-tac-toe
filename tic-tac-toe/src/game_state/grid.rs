@@ -1,5 +1,5 @@
 use quicksilver::{
-    geom::{Shape, Transform},
+    geom::{Shape, Transform, Vector},
     graphics::Background::Img,
     lifecycle::Window,
 };
@@ -11,15 +11,15 @@ type GridCells = [[Cell; 3]; 3];
 
 #[derive(Default)]
 pub struct GridBuilder {
-    reference: RawPoint,
+    reference: Vector,
     padding: f32,
     line_size: f32,
 
     // helper params that cannot be set, but are
     // calculated from the other params
-    padded_reference: RawPoint,
-    bottom_right: RawPoint,
-    mid: RawPoint,
+    padded_reference: Vector,
+    bottom_right: Vector,
+    mid: Vector,
     cell_len: f32,
 }
 
@@ -30,9 +30,9 @@ impl GridBuilder {
         GridBuilder::default()
     }
 
-    pub fn with_reference_point(self, point: RawPoint) -> Self {
+    pub fn with_reference_point(self, point: impl Into<Vector>) -> Self {
         Self {
-            reference: point,
+            reference: point.into(),
             ..self
         }
     }
@@ -58,13 +58,15 @@ impl GridBuilder {
 
     fn calc_helpers(&mut self) {
         self.padded_reference = (
-            self.reference.0 + self.padding,
-            self.reference.1 + self.padding,
-        );
+            self.reference.x + self.padding,
+            self.reference.y + self.padding,
+        )
+            .into();
         self.bottom_right = (
-            self.padded_reference.0 + self.line_size,
-            self.padded_reference.1 + self.line_size,
-        );
+            self.padded_reference.x + self.line_size,
+            self.padded_reference.y + self.line_size,
+        )
+            .into();
         self.mid = midpoint(self.padded_reference, self.bottom_right);
         self.cell_len = self.line_size / 3.0;
     }
@@ -72,12 +74,12 @@ impl GridBuilder {
     fn build_line_mids(&self) -> LineMids {
         LineMids {
             vertical: VertLineMids {
-                left: (self.cell_len + self.padded_reference.0, self.mid.1),
-                right: (self.cell_len * 2.0 + self.padded_reference.0, self.mid.1),
+                left: (self.cell_len + self.padded_reference.x, self.mid.y).into(),
+                right: (self.cell_len * 2.0 + self.padded_reference.x, self.mid.y).into(),
             },
             horizontal: HorizLineMids {
-                top: (self.mid.0, self.cell_len + self.padded_reference.1),
-                bottom: (self.mid.0, self.cell_len * 2.0 + self.padded_reference.1),
+                top: (self.mid.x, self.cell_len + self.padded_reference.y).into(),
+                bottom: (self.mid.x, self.cell_len * 2.0 + self.padded_reference.y).into(),
             },
         }
     }
@@ -88,13 +90,15 @@ impl GridBuilder {
         for (i, column) in cells.iter_mut().enumerate() {
             for (j, cell) in column.iter_mut().enumerate() {
                 cell.top_left = (
-                    i as f32 * self.cell_len + self.padded_reference.0,
-                    j as f32 * self.cell_len + self.padded_reference.1,
-                );
+                    i as f32 * self.cell_len + self.padded_reference.x,
+                    j as f32 * self.cell_len + self.padded_reference.y,
+                )
+                    .into();
                 cell.bottom_right = (
-                    (i as f32 + 1.0) * self.cell_len + self.padded_reference.0,
-                    (j as f32 + 1.0) * self.cell_len + self.padded_reference.1,
-                );
+                    (i as f32 + 1.0) * self.cell_len + self.padded_reference.x,
+                    (j as f32 + 1.0) * self.cell_len + self.padded_reference.y,
+                )
+                    .into();
                 cell.mid = midpoint(cell.top_left, cell.bottom_right);
             }
         }
@@ -119,14 +123,14 @@ pub struct LineMids {
 
 #[derive(Debug, Default)]
 pub struct VertLineMids {
-    pub left: RawPoint,
-    pub right: RawPoint,
+    pub left: Vector,
+    pub right: Vector,
 }
 
 #[derive(Debug, Default)]
 pub struct HorizLineMids {
-    pub top: RawPoint,
-    pub bottom: RawPoint,
+    pub top: Vector,
+    pub bottom: Vector,
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -152,14 +156,14 @@ impl Grid {
         }
     }
 
-    fn h_line_mids(&self) -> [RawPoint; 2] {
+    fn h_line_mids(&self) -> [Vector; 2] {
         [
             self.line_mids.horizontal.top,
             self.line_mids.horizontal.bottom,
         ]
     }
 
-    fn v_line_mids(&self) -> [RawPoint; 2] {
+    fn v_line_mids(&self) -> [Vector; 2] {
         [self.line_mids.vertical.left, self.line_mids.vertical.right]
     }
 }
