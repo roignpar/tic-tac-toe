@@ -15,7 +15,7 @@ pub enum XorZ {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-enum CellState {
+pub enum CellState {
     Empty,
     Marked(XorZ),
 }
@@ -26,11 +26,13 @@ pub enum Outcome {
     Win(XorZ),
 }
 
+pub type BoardState = [[CellState; ROW_SIZE]; ROW_SIZE];
+
 pub struct Game {
     turn_number: u8,
     /// who's turn is it?
     turn_of: XorZ,
-    state: [[CellState; ROW_SIZE]; ROW_SIZE],
+    state: BoardState,
     outcome: Option<Outcome>,
 }
 
@@ -69,6 +71,14 @@ impl Game {
         self.advance_turn();
 
         Ok(None)
+    }
+
+    pub fn turn(&self) -> XorZ {
+        self.turn_of
+    }
+
+    pub fn board_state(&self) -> &BoardState {
+        &self.state
     }
 
     fn check_outcome(&mut self, last_x: usize, last_y: usize) -> Option<Outcome> {
