@@ -1,10 +1,11 @@
 use quicksilver::{
-    graphics::Color,
+    geom::Shape,
+    graphics::{Background::Img, Color, Image},
     lifecycle::{State, Window},
     Result as QSResult,
 };
 
-use lib_tac_toe::Game;
+use lib_tac_toe::{CellState, Game, XorZ};
 
 mod assets;
 pub mod grid;
@@ -39,6 +40,34 @@ impl State for TicTacToe {
 
         self.grid.draw(window, &self.assets);
 
+        self.draw_game_state(window);
+
         Ok(())
+    }
+}
+
+impl TicTacToe {
+    fn draw_game_state(&self, window: &mut Window) {
+        let board = self.game.board_state();
+
+        for (i, column) in board.iter().enumerate() {
+            for (j, cell) in column.iter().enumerate() {
+                if let CellState::Marked(mark) = cell {
+                    let img = self.x_z_image(*mark);
+                    let center = self.grid.cells[i][j].mid;
+
+                    window.draw(&img.area().with_center(center), Img(&img));
+                }
+            }
+        }
+    }
+
+    fn x_z_image(&self, xz: XorZ) -> &Image {
+        use XorZ::*;
+
+        match xz {
+            X => &self.assets.x,
+            Z => &self.assets.z,
+        }
     }
 }
