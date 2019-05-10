@@ -7,7 +7,7 @@ use quicksilver::{
 mod calc;
 mod game_state;
 
-use game_state::GameState;
+use game_state::TicTacToe;
 
 const WINDOW_WIDTH: u32 = 900;
 const WINDOW_HEIGHT: u32 = 650;
@@ -15,7 +15,7 @@ const WINDOW_HEIGHT: u32 = 650;
 fn main() -> QSResult<()> {
     let window_size = Vector::new(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    run::<GameState>(
+    run::<TicTacToe>(
         "Tic-tac-toe",
         window_size,
         Settings {

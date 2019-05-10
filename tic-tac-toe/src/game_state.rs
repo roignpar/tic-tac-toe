@@ -15,13 +15,13 @@ use grid::*;
 const BG_COLOR: &str = "f2eecb";
 const GRID_PADDING: f32 = 46.5;
 
-pub struct GameState {
+pub struct TicTacToe {
     pub grid: Grid,
     assets: GameAssets,
     game: Game,
 }
 
-impl State for GameState {
+impl State for TicTacToe {
     fn new() -> QSResult<Self> {
         let assets = GameAssets::new()?;
         let grid = GridBuilder::new()
