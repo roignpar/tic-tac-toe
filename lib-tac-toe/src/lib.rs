@@ -26,6 +26,7 @@ pub enum Outcome {
     Win(XorZ),
 }
 
+pub type CellCoord = (usize, usize);
 pub type BoardState = [[CellState; ROW_SIZE]; ROW_SIZE];
 
 pub struct Game {
@@ -146,7 +147,7 @@ impl Game {
         Self::marked_same(self.state[2][0], self.state[1][1], self.state[0][2])
     }
 
-    fn other_two_indexes(i: usize) -> (usize, usize) {
+    fn other_two_indexes(i: usize) -> CellCoord {
         match i {
             0 => (1, 2),
             1 => (0, 2),
@@ -339,7 +340,7 @@ mod test {
         assert_turn(&g, 5, X);
     }
 
-    fn game_with_markings(m: &[(usize, usize)]) -> Game {
+    fn game_with_markings(m: &[CellCoord]) -> Game {
         let mut g = Game::new();
 
         for (x, y) in m {
