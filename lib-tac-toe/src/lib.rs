@@ -97,7 +97,8 @@ impl Game {
         }
 
         if self.turn_number == MAX_TURNS {
-            return Some(Outcome::Draw);
+            self.outcome = Some(Outcome::Draw);
+            return self.outcome;
         }
 
         None
