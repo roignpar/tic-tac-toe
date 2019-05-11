@@ -81,7 +81,7 @@ impl TicTacToe {
     fn handle_mouse(&mut self, mouse: Mouse) {
         let position = mouse.pos();
 
-        if mouse[MouseButton::Left].is_down() && self.grid.inside_grid(position) {
+        if mouse[MouseButton::Left].is_down() {
             if let Some((coord, _)) = self.grid.cell_containing(position) {
                 let _ = self.game.mark(coord.0, coord.1);
             }

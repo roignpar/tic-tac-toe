@@ -169,6 +169,10 @@ impl Grid {
     }
 
     pub fn cell_containing(&self, v: Vector) -> Option<(CellCoord, &Cell)> {
+        if !self.inside_grid(v) {
+            return None;
+        }
+
         for (i, column) in self.cells.iter().enumerate() {
             for (j, cell) in column.iter().enumerate() {
                 if cell.contains(v) {
