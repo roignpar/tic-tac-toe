@@ -1,12 +1,12 @@
 use quicksilver::{
-    geom::Shape,
+    geom::{Shape, Transform, Vector},
     graphics::{Background::Img, Color, Image},
     input::{Mouse, MouseButton},
     lifecycle::{State, Window},
     Result as QSResult,
 };
 
-use lib_tac_toe::{CellState, Game, XorZ};
+use lib_tac_toe::{CellState, Game, Outcome, WinLine, XorZ};
 
 mod assets;
 pub mod grid;
@@ -16,6 +16,15 @@ use grid::*;
 
 const BG_COLOR: &str = "f2eecb";
 const GRID_PADDING: f32 = 46.5;
+
+// win line angles; a bit skewed
+const HWL_ANGLE: i16 = 88;
+const VWL_ANGLE: i16 = -2;
+const DLWL_ANGLE: i16 = -42;
+const DRWL_ANGLE: i16 = 47;
+
+const WL_SCALE: (f32, f32) = (1.0, 0.94);
+const DWL_SCALE: (f32, f32) = (1.0, 1.3);
 
 pub struct TicTacToe {
     pub grid: Grid,
@@ -66,6 +75,49 @@ impl TicTacToe {
                     window.draw(&img.area().with_center(center), Img(&img));
                 }
             }
+        }
+
+        self.draw_win_line(window);
+    }
+
+    fn draw_win_line(&self, window: &mut Window) {
+        if let Some(Outcome::Win(_, wl)) = self.game.get_outcome() {
+            let (center, angle) = self.win_line_center_angle(wl);
+
+            window.draw_ex(
+                &self.assets.line.area().with_center(center),
+                Img(&self.assets.line),
+                Transform::rotate(angle) * Transform::scale(self.win_line_scale(wl)),
+                0,
+            );
+        }
+    }
+
+    fn win_line_center_angle(&self, line: WinLine) -> (Vector, i16) {
+        use WinLine::*;
+
+        let cells = &self.grid.cells;
+
+        match line {
+            HTop => (cells[1][0].mid, HWL_ANGLE),
+            HMid => (cells[1][1].mid, HWL_ANGLE),
+            HBottom => (cells[1][2].mid, HWL_ANGLE),
+
+            VLeft => (cells[0][1].mid, VWL_ANGLE),
+            VMid => (cells[1][1].mid, VWL_ANGLE),
+            VRight => (cells[2][1].mid, VWL_ANGLE),
+
+            DLeft => (cells[1][1].mid, DLWL_ANGLE),
+            DRight => (cells[1][1].mid, DRWL_ANGLE),
+        }
+    }
+
+    fn win_line_scale(&self, line: WinLine) -> impl Into<Vector> {
+        use WinLine::*;
+
+        match line {
+            DRight | DLeft => DWL_SCALE,
+            _ => WL_SCALE,
         }
     }
 
