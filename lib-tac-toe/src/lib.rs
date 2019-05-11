@@ -23,7 +23,19 @@ pub enum CellState {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Outcome {
     Draw,
-    Win(XorZ),
+    Win(XorZ, WinLine),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum WinLine {
+    DLeft,
+    DRight,
+    VLeft,
+    VMid,
+    VRight,
+    HTop,
+    HMid,
+    HBottom,
 }
 
 pub type CellCoord = (usize, usize);
@@ -82,17 +94,18 @@ impl Game {
         &self.state
     }
 
+    pub fn get_outcome(&self) -> Option<Outcome> {
+        self.outcome
+    }
+
     fn check_outcome(&mut self, last_x: usize, last_y: usize) -> Option<Outcome> {
         // there cannot be a winner before turn 3
         if (self.turn_number as usize) < ROW_SIZE {
             return None;
         }
 
-        let won =
-            self.won_v(last_x, last_y) || self.won_h(last_x, last_y) || self.won_d(last_x, last_y);
-
-        if won {
-            self.outcome = Some(Outcome::Win(self.turn_of));
+        if let Some(wl) = self.win_line(last_x, last_y) {
+            self.outcome = Some(Outcome::Win(self.turn_of, wl));
             return self.outcome;
         }
 
@@ -102,6 +115,30 @@ impl Game {
         }
 
         None
+    }
+
+    fn win_line(&self, x: usize, y: usize) -> Option<WinLine> {
+        if self.won_v(x, y) {
+            match x {
+                0 => Some(WinLine::VLeft),
+                1 => Some(WinLine::VMid),
+                2 => Some(WinLine::VRight),
+                _ => unreachable!(),
+            }
+        } else if self.won_h(x, y) {
+            match y {
+                0 => Some(WinLine::HTop),
+                1 => Some(WinLine::HMid),
+                2 => Some(WinLine::HBottom),
+                _ => unreachable!(),
+            }
+        } else if self.won_d_left() {
+            Some(WinLine::DLeft)
+        } else if self.won_d_right() {
+            Some(WinLine::DRight)
+        } else {
+            None
+        }
     }
 
     /// Vertical.
@@ -126,16 +163,6 @@ impl Game {
         let cell3 = self.state[x3][y];
 
         Self::marked_same(cell1, cell2, cell3)
-    }
-
-    /// Diagonal
-    fn won_d(&self, x: usize, y: usize) -> bool {
-        match (x, y) {
-            (1, 1) => self.won_d_left() || self.won_d_right(),
-            (0, 0) | (2, 2) => self.won_d_left(),
-            (2, 0) | (0, 2) => self.won_d_right(),
-            _ => false,
-        }
     }
 
     /// Diagonal 0 0, 1 1, 2 2
@@ -190,6 +217,7 @@ impl Default for Game {
 mod test {
     use super::*;
     use Outcome::*;
+    use WinLine::*;
     use XorZ::*;
 
     // TODO: find a way to check that the returned errors have the correct types
@@ -218,14 +246,14 @@ mod test {
         // as X
         let mut g = horizontal_game_start();
 
-        assert_winner(g.mark(2, 0), X);
+        assert_winner(g.mark(2, 0), X, HTop);
 
         // as 0
         g = horizontal_game_start();
 
         g.mark(0, 2).unwrap();
 
-        assert_winner(g.mark(2, 1), Z);
+        assert_winner(g.mark(2, 1), Z, HMid);
     }
 
     fn horizontal_game_start() -> Game {
@@ -237,14 +265,14 @@ mod test {
         // as X
         let mut g = vertical_game_start();
 
-        assert_winner(g.mark(0, 2), X);
+        assert_winner(g.mark(0, 2), X, VLeft);
 
         // as 0
         g = vertical_game_start();
 
         g.mark(2, 0).unwrap();
 
-        assert_winner(g.mark(1, 2), Z);
+        assert_winner(g.mark(1, 2), Z, VMid);
     }
 
     fn vertical_game_start() -> Game {
@@ -255,22 +283,22 @@ mod test {
     fn left_diagonal_win() {
         let mut g = game_with_markings(&[(0, 0), (0, 1), (1, 1), (0, 2)]);
 
-        assert_winner(g.mark(2, 2), X);
+        assert_winner(g.mark(2, 2), X, DLeft);
 
         g = game_with_markings(&[(1, 0), (0, 0), (1, 2), (1, 1), (0, 1)]);
 
-        assert_winner(g.mark(2, 2), Z);
+        assert_winner(g.mark(2, 2), Z, DLeft);
     }
 
     #[test]
     fn righ_diagonal_win() {
         let mut g = game_with_markings(&[(2, 0), (0, 0), (1, 1), (0, 1)]);
 
-        assert_winner(g.mark(0, 2), X);
+        assert_winner(g.mark(0, 2), X, DRight);
 
         g = game_with_markings(&[(0, 0), (2, 0), (1, 0), (1, 1), (0, 1)]);
 
-        assert_winner(g.mark(0, 2), Z);
+        assert_winner(g.mark(0, 2), Z, DRight);
     }
 
     #[test]
@@ -351,8 +379,8 @@ mod test {
         g
     }
 
-    fn assert_winner(r: MarkResult, xz: XorZ) {
-        assert_outcome(r, Win(xz));
+    fn assert_winner(r: MarkResult, xz: XorZ, line: WinLine) {
+        assert_outcome(r, Win(xz, line));
     }
 
     fn assert_outcome(r: MarkResult, o: Outcome) {
