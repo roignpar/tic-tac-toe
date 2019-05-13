@@ -98,6 +98,10 @@ impl Game {
         self.outcome
     }
 
+    pub fn ended(&self) -> bool {
+        self.outcome.is_some()
+    }
+
     fn check_outcome(&mut self, last_x: usize, last_y: usize) -> Option<Outcome> {
         // there cannot be a winner before turn 3
         if (self.turn_number as usize) < ROW_SIZE {
@@ -367,6 +371,17 @@ mod test {
         // last move should not change the turn because
         // there are no more turns after it
         assert_turn(&g, 5, X);
+    }
+
+    #[test]
+    fn ended() {
+        let mut g = horizontal_game_start();
+
+        assert!(!g.ended());
+
+        g.mark(2, 0).unwrap();
+
+        assert!(g.ended());
     }
 
     fn game_with_markings(m: &[CellCoord]) -> Game {
