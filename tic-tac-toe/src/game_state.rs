@@ -1,6 +1,9 @@
 use quicksilver::{
     geom::{Shape, Transform, Vector},
-    graphics::{Background::Img, Color, Image},
+    graphics::{
+        Background::{Blended, Img},
+        Color, Image,
+    },
     input::{Mouse, MouseButton},
     lifecycle::{State, Window},
     Result as QSResult,
@@ -16,6 +19,7 @@ use grid::*;
 
 const BG_COLOR: &str = "f2eecb";
 const GRID_PADDING: f32 = 46.5;
+const MARK_SHADOW_ALPHA: f32 = 0.09;
 
 // win line angles; a bit skewed
 const HWL_ANGLE: i16 = 88;
@@ -51,6 +55,8 @@ impl State for TicTacToe {
         self.grid.draw(window, &self.assets);
 
         self.draw_game_state(window);
+
+        self.draw_mark_shadow(window);
 
         Ok(())
     }
@@ -90,6 +96,21 @@ impl TicTacToe {
                 Transform::rotate(angle) * Transform::scale(self.win_line_scale(wl)),
                 0,
             );
+        }
+    }
+
+    fn draw_mark_shadow(&self, window: &mut Window) {
+        if self.game.ended() {
+            return;
+        }
+
+        if let Some((coord, cell)) = self.grid.cell_containing(window.mouse().pos()) {
+            if !self.game.is_marked(coord.0, coord.1) {
+                let img = self.x_z_image(self.game.turn());
+                let color = Color::from_rgba(0, 0, 0, MARK_SHADOW_ALPHA);
+
+                window.draw(&img.area().with_center(cell.mid), Blended(img, color));
+            }
         }
     }
 
