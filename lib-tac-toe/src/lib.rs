@@ -102,6 +102,14 @@ impl Game {
         self.outcome.is_some()
     }
 
+    pub fn is_marked(&self, x: usize, y: usize) -> bool {
+        if Self::check_index_bounds(x, y).is_err() {
+            false
+        } else {
+            self.state[x][y] != CellState::Empty
+        }
+    }
+
     fn check_outcome(&mut self, last_x: usize, last_y: usize) -> Option<Outcome> {
         // there cannot be a winner before turn 3
         if (self.turn_number as usize) < ROW_SIZE {
@@ -382,6 +390,24 @@ mod test {
         g.mark(2, 0).unwrap();
 
         assert!(g.ended());
+    }
+
+    #[test]
+    fn marked_cells() {
+        let mut g = Game::new();
+
+        // out of bounds
+        assert!(!g.is_marked(3, 3));
+
+        for x in 0..3 {
+            for y in 0..3 {
+                assert!(!g.is_marked(x, y));
+            }
+        }
+
+        g.mark(0, 0).unwrap();
+
+        assert!(g.is_marked(0, 0));
     }
 
     fn game_with_markings(m: &[CellCoord]) -> Game {
