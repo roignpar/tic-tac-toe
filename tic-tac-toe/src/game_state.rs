@@ -78,7 +78,7 @@ impl TicTacToe {
                     let img = self.x_z_image(*mark);
                     let center = self.grid.cells[i][j].mid;
 
-                    window.draw(&img.area().with_center(center), Img(&img));
+                    window.draw(&img.area().with_center(center), Img(img));
                 }
             }
         }
