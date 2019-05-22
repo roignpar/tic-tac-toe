@@ -199,10 +199,3 @@ impl Grid {
         [self.line_mids.vertical.left, self.line_mids.vertical.right]
     }
 }
-
-fn inside_rectangle(top_left: Vector, bottom_right: Vector, point: Vector) -> bool {
-    point.x > top_left.x
-        && point.y > top_left.y
-        && point.x < bottom_right.x
-        && point.y < bottom_right.y
-}
