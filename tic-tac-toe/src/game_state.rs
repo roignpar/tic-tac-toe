@@ -12,6 +12,8 @@ use quicksilver::{
 use lib_tac_toe::{CellState, Game, Outcome, WinLine, XorZ};
 
 mod assets;
+mod buttons;
+mod commands;
 pub mod grid;
 
 use assets::*;
