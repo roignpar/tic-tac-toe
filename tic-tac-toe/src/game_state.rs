@@ -2,7 +2,7 @@ use quicksilver::{
     geom::{Shape, Transform, Vector},
     graphics::{
         Background::{Blended, Img},
-        Color, Image,
+        Color, Font, Image,
     },
     input::{Mouse, MouseButton},
     lifecycle::{State, Window},
@@ -17,6 +17,8 @@ mod commands;
 pub mod grid;
 
 use assets::*;
+use buttons::*;
+use commands::*;
 use grid::*;
 
 const BG_COLOR: &str = "f2eecb";
@@ -32,10 +34,14 @@ const DRWL_ANGLE: i16 = 47;
 const WL_SCALE: (f32, f32) = (1.0, 0.94);
 const DWL_SCALE: (f32, f32) = (1.0, 1.3);
 
+const BTNS_WIDTH: f32 = 250.0;
+const BTNS_PADDING: f32 = 30.0;
+
 pub struct TicTacToe {
     pub grid: Grid,
     assets: GameAssets,
     game: Game,
+    buttons: GameButtons,
 }
 
 impl State for TicTacToe {
@@ -48,7 +54,16 @@ impl State for TicTacToe {
             .build();
         let game = Game::new();
 
-        Ok(Self { assets, grid, game })
+        let btns_tl = Vector::new(grid.total_width, 0.0);
+        let btns_br = Vector::new(grid.total_width + BTNS_WIDTH, grid.total_height);
+        let buttons = Self::new_buttons(btns_tl, btns_br, &assets.font)?;
+
+        Ok(Self {
+            assets,
+            grid,
+            game,
+            buttons,
+        })
     }
 
     fn draw(&mut self, window: &mut Window) -> QSResult<()> {
@@ -59,6 +74,8 @@ impl State for TicTacToe {
         self.draw_game_state(window);
 
         self.draw_mark_shadow(window);
+
+        self.buttons.draw(window);
 
         Ok(())
     }
@@ -71,6 +88,15 @@ impl State for TicTacToe {
 }
 
 impl TicTacToe {
+    fn new_buttons(top_left: Vector, bottom_right: Vector, font: &Font) -> QSResult<GameButtons> {
+        let mut buttons = GameButtons::new(top_left, bottom_right, BTNS_PADDING);
+
+        let new_game_btn = GameButton::new(font, "NEW GAME", Command::NewGame)?;
+        buttons.add_button(new_game_btn);
+
+        Ok(buttons)
+    }
+
     fn draw_game_state(&self, window: &mut Window) {
         let board = self.game.board_state();
 
@@ -160,6 +186,18 @@ impl TicTacToe {
             if let Some((coord, _)) = self.grid.cell_containing(position) {
                 let _ = self.game.mark(coord.0, coord.1);
             }
+
+            if let Some(command) = self.buttons.btn_command(position) {
+                self.handle_command(command);
+            }
+        }
+    }
+
+    fn handle_command(&mut self, command: Command) {
+        use Command::*;
+
+        match command {
+            NewGame => self.game = Game::new(),
         }
     }
 }
