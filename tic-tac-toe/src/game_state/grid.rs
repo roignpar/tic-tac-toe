@@ -169,7 +169,7 @@ impl Grid {
     }
 
     pub fn cell_containing(&self, v: Vector) -> Option<(CellCoord, &Cell)> {
-        if !self.inside_grid(v) {
+        if !self.inside(v) {
             return None;
         }
 
@@ -184,7 +184,7 @@ impl Grid {
         None
     }
 
-    pub fn inside_grid(&self, v: Vector) -> bool {
+    fn inside(&self, v: Vector) -> bool {
         inside_rectangle(self.top_left, self.bottom_right, v)
     }
 
