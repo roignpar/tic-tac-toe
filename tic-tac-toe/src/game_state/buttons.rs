@@ -17,11 +17,17 @@ const FONT_COLOR: Color = Color {
 };
 
 const BTN_HEIGHT: f32 = 40.0;
+const BTN_ALPHA: f32 = 0.72;
+const BTN_HL_ALPHA: f32 = 1.0;
 const BTN_COLOR: Color = Color {
     r: 1.0,
     g: 0.7,
     b: 0.1,
-    a: 1.0,
+    a: BTN_ALPHA,
+};
+const BTN_HL_COLOR: Color = Color {
+    a: BTN_HL_ALPHA,
+    ..BTN_COLOR
 };
 const BTN_SPACING: f32 = 20.0;
 
@@ -107,11 +113,15 @@ impl GameButton {
     fn draw(&self, window: &mut Window) {
         let mid = midpoint(self.top_left, self.bottom_right);
         let rectangle = self.bg_rectangle();
+        let mouse_pos = window.mouse().pos();
 
-        window.draw(&rectangle.with_center(mid), Background::Col(BTN_COLOR));
+        window.draw(
+            &rectangle.with_center(mid),
+            Background::Col(self.bg_color(mouse_pos)),
+        );
         window.draw(
             &self.rendered_text.area().with_center(mid),
-            Background::Img(&self.rendered_text),
+            Background::Blended(&self.rendered_text, self.text_blend_color(mouse_pos)),
         );
     }
 
@@ -126,6 +136,29 @@ impl GameButton {
 
     fn contains(&self, v: Vector) -> bool {
         inside_rectangle(self.top_left, self.bottom_right, v)
+    }
+
+    fn bg_color(&self, mouse_pos: Vector) -> Color {
+        if self.contains(mouse_pos) {
+            BTN_HL_COLOR
+        } else {
+            BTN_COLOR
+        }
+    }
+
+    fn text_blend_color(&self, mouse_pos: Vector) -> Color {
+        let alpha = if self.contains(mouse_pos) {
+            BTN_HL_ALPHA
+        } else {
+            BTN_ALPHA
+        };
+
+        Color {
+            r: 0.0,
+            g: 0.0,
+            b: 0.0,
+            a: alpha,
+        }
     }
 }
 
