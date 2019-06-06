@@ -2,4 +2,5 @@
 members = [
     "lib-tac-toe",
     "tic-tac-toe",
+    "net-tac-toe",
 ]
