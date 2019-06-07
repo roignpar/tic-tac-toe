@@ -5,3 +5,7 @@ authors = ["Robert Ignat <robert.ignat91@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+bytes = "0.4.12"
+failure = "0.1.5"
+base64 = "0.10.1"
+tokio = "0.1.21"
